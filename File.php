@@ -1,5 +1,5 @@
 <?php
-namespace Simon\File\Uploads;
+namespace Simon\FileUploads;
 class File extends \SplFileInfo
 {
 	

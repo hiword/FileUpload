@@ -1,5 +1,13 @@
 {
     "name": "simon/file-upload",
-    "description": "file upload",
+    "description": "php file upload",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "hiword",
+            "email": "28737164@qq.com"
+        }
+    ],
+    "minimum-stability": "dev",
     "require": {}
 }
