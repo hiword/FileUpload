@@ -798,7 +798,7 @@ trait MimeTrait
      * @return \Simon\File\Uploads\FileUpload
      * @author simon
      */
-    public function setCheckMime(bool $isCheck) : MimeTrait
+    public function setCheckMime(bool $isCheck) : self
     {
         $this->checkMime = $isCheck;
 
@@ -810,7 +810,7 @@ trait MimeTrait
      *
      * @author simon
      */
-    public function getCheckMime() : bool
+    protected function getCheckMime() : bool
     {
         return $this->checkMime;
     }
@@ -821,7 +821,7 @@ trait MimeTrait
      * @author simon
      * @return \Simon\File\Uploads\FileUpload
      */
-    public function setMimes(array $mimes) : MimeTrait
+    public function setMimes(array $mimes) : self
     {
         $this->mimes = array_merge($this->mimes,$mimes);
 
@@ -833,7 +833,7 @@ trait MimeTrait
      *
      * @author simon
      */
-    public function getMimes($extension = null)
+    protected function getMimes($extension = null)
     {
         return $extension ? $this->mimes[$extension] : $this->mimes;
     }

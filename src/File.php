@@ -1,19 +1,19 @@
 <?php
-namespace Simon\FileUploads;
+namespace Simon\Upload;
 class File extends \SplFileInfo
 {
 	
-//	protected $path = null;
+	protected $filePath = null;
 //
 //	protected $newName = null;
 //
 //	protected $newPath = null;
 //
-//	public function __construct($path)
-//	{
-//		parent::__construct($path);
-//		$this->path = $path;
-//	}
+	public function __construct($path)
+	{
+		parent::__construct($path);
+		$this->filePath = $path;
+	}
 //
 //	/**
 //	 * 设置hash目录
@@ -94,10 +94,18 @@ class File extends \SplFileInfo
 //	 * @param string $path
 //	 * @author simon
 //	 */
+
+
+//public function getSize()
+//{
+//    $size = parent::getSize();
+//    dd($size);exit();
+//}
+
 	public function getFileMime()
 	{
-		$finfo = new \finfo(FILEINFO_MIME_TYPE);
-		return $finfo->file($this->path);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE); // 返回 mime 类型
+        return finfo_file($finfo, $this->filePath);
 	}
 //
 //	/**

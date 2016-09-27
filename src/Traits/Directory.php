@@ -14,6 +14,12 @@ trait Directory
 
     protected $hashDirLayer = 2;
 
+    public function setHashDirLayer(int $layer) : self
+    {
+        $this->hashDirLayer = $layer;
+        return $this;
+    }
+
     /**
      * 设置hash目录
      * @param string $name

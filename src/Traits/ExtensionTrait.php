@@ -31,7 +31,7 @@ trait ExtensionTrait
      * @return \Simon\File\Uploads\FileUpload
      * @author simon
      */
-    public function setCheckExtension(bool $isCheck) : static
+    public function setCheckExtension(bool $isCheck) : self
     {
         $this->checkExtension = $isCheck;
 
@@ -43,7 +43,7 @@ trait ExtensionTrait
      *
      * @author simon
      */
-    public function getCheckExtension() : bool
+    protected function getCheckExtension() : bool
     {
         return $this->checkExtension;
     }
@@ -54,7 +54,7 @@ trait ExtensionTrait
      * @return \Simon\File\Uploads\FileUpload
      * @author simon
      */
-    public function setExtensions(array $extensions) : static
+    public function setExtensions(array $extensions) : self
     {
         $this->extensions = $extensions;
 
@@ -66,7 +66,7 @@ trait ExtensionTrait
      *
      * @author simon
      */
-    public function getExtensions() : array
+    protected function getExtensions() : array
     {
         return $this->extensions;
     }

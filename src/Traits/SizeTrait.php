@@ -43,13 +43,13 @@ trait SizeTrait
         return $this->fileSize;
     }
 
-    public function setFileSize(int $fileSize) : SizeTrait
+    public function setFileSize(int $fileSize) : self
     {
         $this->fileSize = $fileSize;
         return $this;
     }
 
-    public function getFileSize() : int
+    protected function getFileSize() : int
     {
         return $this->fileSize;
     }

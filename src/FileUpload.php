@@ -1,16 +1,17 @@
 <?php
 namespace Simon\Upload;
+use Simon\Upload\Contracts\FileUploadInterface;
 use Simon\Upload\Exceptions\TypeErrorException;
 use Simon\Upload\Exceptions\SizeException;
 use Simon\Upload\Exceptions\UploadException;
+use Simon\Upload\File;
 use Simon\Upload\Traits\Directory;
 use Simon\Upload\Traits\ExtensionTrait;
 use Simon\Upload\Traits\MimeTrait;
 use Simon\Upload\Traits\RenameTrait;
 use Simon\Upload\Traits\SizeTrait;
-use Simon\Upload\File;
 
-class FileUpload
+class FileUpload implements FileUploadInterface
 {
 
     use SizeTrait,MimeTrait,ExtensionTrait,Directory,RenameTrait;
@@ -23,7 +24,7 @@ class FileUpload
 	protected $files = [];
 	
 	/**
-	 * File\Uploads\File 对象
+	 * File\Upload\File 对象
 	 * @var object
 	 * @author simon
 	 */
@@ -37,9 +38,10 @@ class FileUpload
 	protected $path = './uploads';
 
     /**
-     * @var null
+     * 完整的文件路径
+     * @var string
      */
-    protected $filePath = null;
+    protected $filePath = '';
 	
 	/**
 	 * 上传中的数据数组
@@ -48,74 +50,79 @@ class FileUpload
 	 */
 	protected $currentUpload = [];
 
-
-
-	
-	public function __construct($path = null)
+    /**
+     * FileUpload constructor.
+     * @param string $path
+     * @param array $config
+     */
+	public function __construct($path = '',$config = [])
 	{
+
 		$this->setPath($path);
-	}
-	
-	/**
-	 * 全局配置，可使用setXX方法覆盖config方法
-	 * @param array $config
-	 * @author simon
-	 */
-	public function config(array $config) : static
-	{
-		$allowPrototype = ['filesize','extensions','checkExtension','checkMime','rename','hashDirLayer','path'];
-		
-		foreach ($config as $key=>$value)
-		{
-			in_array($key, $allowPrototype,true) && $this->$key = $value;
-		}
-		
-		return $this;
+
+        if ($config)
+        {
+            $this->config($config);
+        }
 	}
 
+    public function config(array $config) : FileUploadInterface
+    {
+        // TODO: Implement config() method.
+        $allowFunc = ['setFileSize','setRename','setCheckMime','setMimes','setCheckExtension','setExtensions','setHashDirLayer'];
 
-	/**
-	 * 文件上传
-	 * 
-	 * @author simon
-	 */
-	public function upload()
-	{
-		foreach ($this->formatFiles() as $file)
-		{
-			$this->setUploading($file);
+        foreach ($config as $key=>$value)
+        {
+            if (in_array($key, $allowFunc,true))
+            {
+                call_user_func_array([$this,$key],[$value]);
+            }
+        }
 
-			//验证上传
-			$this->checkUpload();
-			
-			//开始上传
-			$this->handleUpload();
-		}
-	}
-	
-	/**
-	 * 获取上传的文件
-	 * @author simon
-	 */
-	public function getFiles()
-	{
-		return $this->files;
-	}
-	
+        return $this;
+    }
+
+    public function upload() : FileUploadInterface
+    {
+        // TODO: Implement upload() method.
+        foreach ($this->formatFiles() as $file)
+        {
+            $this->setUploading($file);
+
+            //验证上传
+            $this->checkUpload();
+
+            //开始上传
+            $this->handleUpload();
+        }
+
+        return $this;
+    }
+
+    public function getFiles() : array
+    {
+        // TODO: Implement getFiles() method.
+        return $this->files;
+    }
+
 	/**
 	 * 存储当前上传的临时信息数组
 	 * @param array $upload
 	 * @author simon
 	 */
-	protected function setUploading(array $upload) : static
+	protected function setUploading(array $upload)
 	{
 	    $upload['extension'] = pathinfo($upload['name'],PATHINFO_EXTENSION);
 
 		$this->currentUpload = $upload;
-        $this->file = new File($this->currentUpload['tmp_name']);
 
-        return $this;
+        $this->setFile($this->currentUpload['tmp_name']);
 	}
+
+	protected function setFile($file)
+    {
+        $this->file = new File($file);
+    }
 	
 	/**
 	 * 验证文件上传
@@ -235,6 +242,7 @@ class FileUpload
 	    {
 	        throw new UploadException($this->currentUpload['name'], UploadException::MOVE_TMP_FILE_ERR);
 	    }
+
 	    return true;
 	}
 	
@@ -244,7 +252,7 @@ class FileUpload
 	 * @param  string $path
 	 * @author simon
 	 */
-	protected function setPath($path)
+	protected function setPath(string $path)
 	{
 		if ($path)
 		{
@@ -255,41 +263,33 @@ class FileUpload
 	}
 
 	/**
-	 * 设置当前文件
-	 * @param string $name
-	 */
-	protected function setFile()
-	{
-		$this->file = new File($this->uploading['tmp_name']);
-		
-		//设置新的文件名
-		$this->file->setNewName($this->getNewName());
-		
-		//设置新的路径
-		$this->file->setNewPath($this->path.'/'.$this->file->getHashDir($this->uploading['name']).$this->file->getNewName());
-	}
-	
-	/**
 	 * 处理文件上传
 	 * @param array $upload
 	 * @author simon
 	 */
 	protected function handleUpload()
 	{
+	    $this->setFilePath();
+
 		//自动创建目录
-        $this->createDir($this->filePath);
+        $this->createDir(dirname($this->filePath));
 			
 		$this->moveUploadFile();
+
+        $this->setFile($this->filePath);
 		
 		$this->setUploadInfo();
 	}
 
+    /**
+     * 设置上传文件新的文件路径
+     */
 	protected function setFilePath()
     {
         //获取当前目录
         $dirs = $this->getHashDir($this->currentUpload['name']);
 
-        $this->filePath = $this->path.$dirs.'/'.$this->getNewName($this->currentUpload['name']);
+        $this->filePath = $this->path.$dirs.$this->getNewName($this->currentUpload['name']);
     }
 	
 	/**
@@ -302,12 +302,12 @@ class FileUpload
 	    $file['new_name'] = pathinfo($this->filePath,PATHINFO_BASENAME);
 	    $file['hash'] = sha1($this->filePath);
 	    $file['old_name'] = $this->currentUpload['name'];
-	    $file['save_path'] = pathinfo($this->path,PATHINFO_DIRNAME);
+	    $file['save_path'] = pathinfo($this->filePath,PATHINFO_DIRNAME);
 	    $file['full_path'] = $this->filePath;
-	    $file['full_root'] = str_replace($this->path, '', $this->filePath);
-	    $file['extension'] = pathinfo($this->path,PATHINFO_EXTENSION);
+	    $file['full_root'] = str_replace(dirname(getenv('SCRIPT_FILENAME')), '', $this->filePath);
+	    $file['extension'] = pathinfo($this->filePath,PATHINFO_EXTENSION);
 	    $file['mime_type'] = $this->file->getFileMime();
-	    $file['filesize'] = $this->file->getSize();
+	    $file['file_size'] = $this->file->getSize();
 	    //完成上传时间
 	    $file['complete_time'] = time();
 	    //完成上传的微秒时间，用于大并发
@@ -315,7 +315,6 @@ class FileUpload
 	    $file['complete_microtime'] = (float)$usec + (float)$sec;
 	    /* //合并上传信息
 	     //$file = array_merge($upload,$file); */
-	    return $file;
 
         $this->files[] = $file;
 	}
@@ -324,7 +323,7 @@ class FileUpload
 	 * 处理需要上传的文件
 	 * @author simon
 	 */
-	protected function formatFiles()
+	protected function formatFiles() : array
 	{
 		$files = [];
 		if (!empty($_FILES))
@@ -365,98 +364,5 @@ class FileUpload
 		
 		return $files;
 	}
-	
 
-// 	protected function getNewName($name)
-// 	{
-// 		if ($this->rename)
-// 		{
-// 			$this->newName = sha1(uniqid('simon_')).mt_rand(1,999).'.'.$this->file->getExtension($name);
-// 		}
-// 		else 
-// 		{
-// 			$this->newName = $name;
-// 		}
-		
-// 		return $this->newName;
-// 	}
-	
-// 	/**
-// 	 * 文件名相同时是否覆盖
-// 	 * @param boolean $isCoverFile
-// 	 * @author simon
-// 	 */
-// 	public function setCoverFile($isCoverFile)
-// 	{
-// 		$this->coverFile = $isCoverFile;
-// 		return $this;
-// 	}
-	
-// 	protected function coverFile($filepath)
-// 	{
-// 		//重命名文件
-// 		if (!$this->coverFile && file_exists($filepath))
-// 		{
-// 			$filepath = pathinfo($filepath);
-// 			$filepath = $filepath['dirname'].'/'.$nameInfo['filename'].'_2.'.$nameInfo['extension'];
-// 		}
-// 		return $filepath;
-// 	}
-	
-	/**
-	 * 设置HashDir
-	 * @param string $name
-	 * @return string
-	 * @author simon
-	 */
-// 	protected function getHashDir($name)
-// 	{
-// 		$dirs = '';
-		
-// 		if ($this->hashDirLayer === 0)
-// 		{
-// 			return $dirs;
-// 		}
-		
-// 		$name = sha1($name);
-// 		$length = strlen($name);
-		
-// 		for($i=0;$i<$length;$i++)
-// 		{
-// 			if ($i+1 > $this->hashDirLayer)
-// 			{
-// 				break;
-// 			}
-// 			$dirs .= substr($name, $i,1).'/';
-// 		}
-		
-// 		return $dirs;
-// 	}
-	
-	/**
-	 * 设置最后的文件路径
-	 * @param string $dir
-	 * @param string $name
-	 * @return string
-	 * @author simon
-	 */
-// 	protected function setFilePath($name)
-// 	{
-// 		$this->fullPath = $this->path.'/'.$this->file.$name;
-// 		return $this->fullPath;
-// 	}
-	
-// 	/**
-// 	 * 创建目录
-// 	 * @param string $dir
-// 	 * @param number $mode
-// 	 * @return boolean|bool
-// 	 */
-// 	protected function mkDir($dir, $mode = 0755)
-// 	{
-// 		if (is_dir($dir) || @mkdir($dir, $mode)) return true;
-// 		if (!@$this->mkDir(dirname($dir), $mode)) return false;
-// 		return mkdir($dir, $mode);
-// 	}
-	
 }

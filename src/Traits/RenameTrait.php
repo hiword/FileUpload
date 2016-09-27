@@ -14,13 +14,13 @@ trait RenameTrait
 
     protected $isRename = true;
 
-    public function setRename(bool $isRename) : RenameTrait
+    public function setRename(bool $isRename) : self
     {
         $this->isRename = $isRename;
         return $this;
     }
 
-    public function getRename() : bool
+    protected function getRename() : bool
     {
         return $this->isRename;
     }
@@ -35,7 +35,7 @@ trait RenameTrait
     {
         if ($this->isRename)
         {
-            $name = sha1(uniqid('simon_')).mt_rand(1,999).'.'.$this->file->getExtension($name);
+            $name = sha1(uniqid('simon_')).mt_rand(1,999).'.'.pathinfo($name,PATHINFO_EXTENSION);
         }
 
         return $name;
