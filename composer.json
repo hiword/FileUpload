@@ -11,7 +11,12 @@
 	"require": {
 		"php":">=7.0"
 	},
-	"version":"0.2.0",
+	"autoload":{
+		"psr-4": {
+            "Simon\\Upload\\": "src/"
+        }
+	},
+	"version":"0.2.1",
     "minimum-stability": "dev"
     
 }
