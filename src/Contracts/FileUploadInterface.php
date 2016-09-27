@@ -11,10 +11,10 @@ namespace Simon\FileUpload\Contracts;
 interface FileUploadInterface
 {
 
-    public function setUploadConfig(array $config) : FileUploadInterface;
+    public function config(array $config) : static;
 
     public function upload() : FileUploadInterface;
 
-    public function getUploadFiles() : array;
+    public function getFiles() : array;
 
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Simon\File\Uploads\Exceptions;
+namespace Simon\Upload\Exceptions;
 
 class SizeException extends \RuntimeException
 {

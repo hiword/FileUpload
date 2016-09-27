@@ -6,7 +6,7 @@
  * Time: 16:58
  */
 
-namespace Simon\FileUpload\Drives;
+namespace Simon\Upload\Drives;
 
 
 use Simon\FileUpload\Contracts\FileUploadInterface;
